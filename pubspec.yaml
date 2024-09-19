@@ -40,8 +40,13 @@ dependencies:
   flutter_animate: ^4.5.0
   animated_text_kit: ^4.2.2
   connectivity_plus: ^6.0.5
+  injectable: ^2.4.4
+  get_it: ^7.7.0
 
 dev_dependencies:
+
+  injectable_generator: ^2.6.2
+  build_runner: ^2.4.12
   flutter_test:
     sdk: flutter
 

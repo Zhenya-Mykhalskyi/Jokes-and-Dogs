@@ -1,26 +1,28 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
 
 import 'package:jokes_generator/models/joke_model.dart';
+import 'package:jokes_generator/services/dog_image_service.dart';
+import 'package:jokes_generator/services/joke_service.dart';
 
+@injectable
 class JokeProvider extends ChangeNotifier {
+  final JokeService jokeService;
+  final DogImageService dogImageService;
+
   List<String> jokeTypes = [];
   String? selectedType;
   Joke? currentJoke;
   String? dogImageUrl;
   bool isLoading = false;
 
-  JokeProvider() {
+  JokeProvider(this.jokeService, this.dogImageService) {
     fetchJokeTypes();
   }
 
   Future<void> fetchJokeTypes() async {
-    final response = await http.get(Uri.parse('https://official-joke-api.appspot.com/types'));
-    if (response.statusCode == 200) {
-      jokeTypes = List<String>.from(json.decode(response.body));
-      notifyListeners();
-    }
+    jokeTypes = await jokeService.fetchJokeTypes();
+    notifyListeners();
   }
 
   Future<void> fetchJokeAndDog() async {
@@ -29,17 +31,8 @@ class JokeProvider extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final jokeResponse = await http
-        .get(Uri.parse('https://official-joke-api.appspot.com/jokes/$selectedType/random'));
-    if (jokeResponse.statusCode == 200) {
-      final jokeList = json.decode(jokeResponse.body) as List<dynamic>;
-      currentJoke = Joke.fromJson(jokeList[0]);
-    }
-
-    final dogResponse = await http.get(Uri.parse('https://dog.ceo/api/breeds/image/random'));
-    if (dogResponse.statusCode == 200) {
-      dogImageUrl = json.decode(dogResponse.body)['message'];
-    }
+    currentJoke = await jokeService.fetchJoke(selectedType!);
+    dogImageUrl = await dogImageService.fetchDogImage();
 
     isLoading = false;
     notifyListeners();
